@@ -22,7 +22,7 @@ def levenshtein_distance(s1, s2):
             else:
                 distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
         distances = distances_
-    return distances[-1]
+    return float(distances[-1])
 
 def levenshtein_distance_novovels(s1, s2):
     vowels = ('a', 'e', 'i', 'o', 'u')
@@ -40,18 +40,29 @@ def levenshtein_distance_novovels(s1, s2):
             else:
                 distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
         distances = distances_
-    return distances[-1]
+    return float(distances[-1])
 
 def store_similar(distance, s1, s2):
+    storable = False
     if distance == 0:
         return
     if len(s1) > len(s2):
-        float(distance) / float(len(s1)) < 0.3
-    if s1 not in SIM_WORDS:
+        storable = float(distance) / float(len(s1)) < 0.3
+    else:
+        storable = float(distance) / float(len(s2)) < 0.3
+    if not storable:
+        return
+    if s1 not in SIM_WORDS and s2 not in SIM_WORDS:
         SIM_WORDS[s1] = set()
-    if s2 not in SIM_WORDS[s1]:
-        SIM_WORDS[s1].add(s2)
-        
+    if s2 in SIM_WORDS:
+        if s1 not in SIM_WORDS[s2]:
+            SIM_WORDS[s2].add(s1)
+    elif s1 in SIM_WORDS:
+        if s2 not in SIM_WORDS[s1]:
+            SIM_WORDS[s1].add(s2)
+    else:
+        raise NotImplementedError()
+
 
 
 def main(argv):
@@ -63,8 +74,9 @@ def main(argv):
         return
     output_index = argv.index('-o') + 1
     output = argv[output_index]
-    switch_index = argv.index('-s')
+    switch_index = argv.index('-s') + 1
     switch = argv[switch_index]
+    print('Storing to {}, based on switch: {}'.format(output, switch))
     all_words = set()
     skip = False
     for file in SRC_FILES:
@@ -92,14 +104,18 @@ def main(argv):
             elif switch == 'nonvovel':
                 dist = levenshtein_distance_novovels(w1, w2)
             store_similar(dist, w1, w2)
+    print('stored {} words'.format(len(SIM_WORDS.keys())))
     with open(output, 'w') as result:
         for key in SIM_WORDS:
-            result.write(key)
-            result.write(': ')
-            for w in SIM_WORDS[key]:
-                result.write(w)
-                result.write(', ')
-            result.write('\n')
+            try:
+                result.write(key)
+                result.write(': ')
+                for w in SIM_WORDS[key]:
+                    result.write(w)
+                    result.write(', ')
+                result.write('\n')
+            except UnsupportedOperation as ex:
+                pass
     print('Done')
 
 
