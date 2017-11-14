@@ -8,4 +8,5 @@ packages/
 *.csproj.user
 *.vscode
 __pycache__/
+.vs/
 
