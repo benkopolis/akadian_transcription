@@ -1,0 +1,9 @@
+*.txt
+*.trans
+*.dll
+Debug/
+Debug/
+*.suo
+packages/
+*.csproj.user
+
