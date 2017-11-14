@@ -6,4 +6,6 @@ Debug/
 *.suo
 packages/
 *.csproj.user
+*.vscode
+__pycache__/
 
